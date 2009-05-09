@@ -38,7 +38,19 @@ class Autotest::Rspec < Autotest
   def make_test_cmd(files_to_test)
     return '' if files_to_test.empty?
     spec_program = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', 'bin', 'spec'))
-    return "#{ruby} #{spec_program} --autospec #{files_to_test.keys.flatten.join(' ')} #{add_options_if_present}"
+    uniq_files = make_uniq_files(files_to_test.keys.flatten)
+    return "#{ruby} #{spec_program} --autospec #{uniq_files.join(' ')} #{add_options_if_present}"
+  end
+  
+  def make_uniq_files fnames
+    uniq_fnames = []
+    fs = []
+    fnames.each do |fname|
+      f = File.new(fname)
+      uniq_fnames.push(fname) unless fs.any?{|ef|File.identical?(f, ef)}
+      fs.push f
+    end
+    uniq_fnames
   end
   
   def add_options_if_present # :nodoc:
